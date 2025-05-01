@@ -9,10 +9,7 @@ import (
 	"strings"
 
 	"github.com/antchfx/htmlquery"
-)
-
-const (
-	stratoAPI = "https://www.strato.de/apps/CustomerService"
+	"k8s.io/klog/v2"
 )
 
 type DNSConfig struct {
@@ -28,6 +25,7 @@ type DNSRecord struct {
 }
 
 type StratoClient struct {
+	api        string
 	identifier string
 	password   string
 	order      string
@@ -38,13 +36,14 @@ type StratoClient struct {
 }
 
 // NewStratoClient initializes and returns a new StratoClient instance
-func NewStratoClient(identifier, password, order, domain string) (*StratoClient, error) {
+func NewStratoClient(api, identifier, password, order, domain string) (*StratoClient, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &StratoClient{
+		api:        api,
 		identifier: identifier,
 		password:   password,
 		order:      order,
@@ -76,7 +75,7 @@ func (c *StratoClient) authenticate() error {
 	// This is done by sending a GET request to the login page.
 	// The server will respond with a Set-Cookie header containing the session ID.
 	// We need to store this cookie in the cookie jar for subsequent requests.
-	req, err := http.NewRequest("GET", stratoAPI, nil)
+	req, err := http.NewRequest("GET", c.api, nil)
 	if err != nil {
 		return err
 	}
@@ -89,7 +88,7 @@ func (c *StratoClient) authenticate() error {
 	cookies := resp.Header.Values("Set-Cookie")
 	for _, cookie := range cookies {
 		if strings.Contains(cookie, "ksb_session") {
-			println(string("ksb id Cookie: " + cookie))
+			klog.V(6).Infof("ksb id Cookie: %s", cookie)
 			break
 		}
 	}
@@ -101,7 +100,7 @@ func (c *StratoClient) authenticate() error {
 	form = append(form, "action_customer_login.x=Login")
 	queryString := strings.Join(form, "&")
 
-	req, err = http.NewRequest("POST", stratoAPI, bytes.NewBufferString(queryString))
+	req, err = http.NewRequest("POST", c.api, bytes.NewBufferString(queryString))
 	if err != nil {
 		return err
 	}
@@ -127,7 +126,7 @@ func (c *StratoClient) authenticate() error {
 		if c.sessionID == "" {
 			return errors.New("sessionID not found in redirect URL")
 		}
-		println("Session ID:", c.sessionID)
+		klog.V(6).Infof("Session ID: %s", c.sessionID)
 		return nil
 	} else if resp.StatusCode == http.StatusOK { // 200
 		// If the status code is 200, it means the login failed
@@ -138,7 +137,7 @@ func (c *StratoClient) authenticate() error {
 }
 
 func (c *StratoClient) populatePackageID() error {
-	getURL := stratoAPI +
+	getURL := c.api +
 		"?sessionID=" + c.sessionID +
 		"&cID=0" +
 		"&node=kds_CustomerEntryPage"
@@ -187,7 +186,7 @@ func (c *StratoClient) populatePackageID() error {
 
 // getDNSRecords retrieves DNS records from the website
 func (c *StratoClient) GetDNSConfiguration() (DNSConfig, error) {
-	getURL := stratoAPI +
+	getURL := c.api +
 		"?sessionID=" + c.sessionID +
 		"&cID=" + c.cID +
 		"&node=ManageDomains" +
@@ -262,7 +261,7 @@ func (c *StratoClient) GetDNSConfiguration() (DNSConfig, error) {
 }
 
 func (c *StratoClient) SetDNSConfiguration(config DNSConfig) error {
-	setURL := stratoAPI +
+	setURL := c.api +
 		"?sessionID=" + c.sessionID +
 		"&cID=" + c.cID +
 		"&action_change_txt_records"
