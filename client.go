@@ -268,7 +268,7 @@ func (c *StratoClient) SetDNSConfiguration(config DNSConfig) error {
 
 	form := []string{}
 	form = append(form, "sessionID="+c.sessionID)
-	form = append(form, "cID=1")
+	form = append(form, "cID="+c.cID)
 	form = append(form, "node=ManageDomains")
 	form = append(form, "vhost="+c.domain)
 	form = append(form, "dmarc_type="+config.DMARCType)
