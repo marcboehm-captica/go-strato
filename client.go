@@ -109,11 +109,11 @@ func (c *StratoClient) authenticate() error {
 
 	// Send the request
 	resp, err = c.session.Do(req)
+
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-
 	if resp.StatusCode == http.StatusFound { // 302
 		// Strato uses a 302 redirect for successful login
 		// The user is redirected to the dashboard page
@@ -153,11 +153,12 @@ func (c *StratoClient) populatePackageID() error {
 		return nil
 	}
 	doc, err := htmlquery.Parse(resp.Body)
+
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	div := htmlquery.FindOne(doc, "//div[@data-pkg-name-order='"+c.order+"']")
+	div := htmlquery.FindOne(doc, "//tr[@data-pkg-name-order='"+c.order+"']")
 	if div == nil {
 		return errors.New("failed to find order")
 	}
