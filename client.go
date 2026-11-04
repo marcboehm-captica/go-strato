@@ -280,20 +280,20 @@ func (c *StratoClient) SetDNSConfiguration(config DNSConfig) error {
 		"&cID=" + c.cID +
 		"&action_change_txt_records"
 
-	form := []string{}
-	form = append(form, "sessionID="+c.sessionID)
-	form = append(form, "cID="+c.cID)
-	form = append(form, "node=ManageDomains")
-	form = append(form, "vhost="+c.domain)
-	form = append(form, "dmarc_type="+config.DMARCType)
-	form = append(form, "spf_type="+config.SPFType)
+	form := url.Values{}
+	form.Set("sessionID", c.sessionID)
+	form.Set("cID", c.cID)
+	form.Set("node", "ManageDomains")
+	form.Set("vhost", c.domain)
+	form.Set("dmarc_type", config.DMARCType)
+	form.Set("spf_type", config.SPFType)
 	for _, record := range config.Records {
-		form = append(form, "type="+record.Type)
-		form = append(form, "prefix="+record.Prefix)
-		form = append(form, "value="+record.Value)
+		form.Add("type", record.Type)
+		form.Add("prefix", record.Prefix)
+		form.Add("value", record.Value)
 	}
-	form = append(form, "action_change_txt_records=Einstellung übernehmen")
-	queryString := strings.Join(form, "&")
+	form.Set("action_change_txt_records", "Einstellung übernehmen")
+	queryString := form.Encode()
 
 	req, err := http.NewRequest("POST", setURL, bytes.NewBufferString(queryString))
 	if err != nil {
