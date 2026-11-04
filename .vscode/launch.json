@@ -1,0 +1,77 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Tests",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}",
+            "args": ["-test.v"],
+            "env": {
+                "STRATO_API": "https://www.strato.de/apps/CustomerService",
+                "STRATO_IDENTIFIER": "<your-identifier>",
+                "STRATO_PASSWORD": "<your-password>",
+                "STRATO_ORDER": "your-order",
+                "STRATO_DOMAIN": "your-domain"
+            }
+        },
+        {
+            "name": "List Records",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd",
+            "args": [
+                "-v=6",
+                "--logtostderr",
+                "--api", "https://www.strato.de/apps/CustomerService",
+                "--identifier", "<your-identifier>",
+                "--password", "<your-password>",
+                "--order", "your-order",
+                "--domain", "your-domain",
+                "--command", "list"
+            ]
+        },
+        {
+            "name": "Add Test Record",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd",
+            "args": [
+                "-v=6",
+                "--logtostderr",
+                "--api", "https://www.strato.de/apps/CustomerService",
+                "--identifier", "<your-identifier>",
+                "--password", "<your-password>",
+                "--order", "your-order",
+                "--domain", "your-domain",
+                "--command", "add",
+                "--type", "TXT",
+                "--prefix", "testprefix",
+                "--value", "testvalue",
+            ]
+        },
+        {
+            "name": "Remove Test Record",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd",
+            "args": [
+                "-v=6",
+                "--logtostderr",
+                "--api", "https://www.strato.de/apps/CustomerService",
+                "--identifier", "<your-identifier>",
+                "--password", "<your-password>",
+                "--order", "your-order",
+                "--domain", "your-domain",
+                "--command", "remove",
+                "--type", "TXT",
+                "--prefix", "testprefix",
+                "--value", "testvalue",
+            ]
+        }
+    ]
+}

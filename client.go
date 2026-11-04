@@ -129,8 +129,17 @@ func (c *StratoClient) authenticate() error {
 		klog.V(6).Infof("Session ID: %s", c.sessionID)
 		return nil
 	} else if resp.StatusCode == http.StatusOK { // 200
-		// If the status code is 200, it means the login failed
-		// and the user is presented with the same login page again
+		// If the status code is 200, it might mean the login failed
+		// or it could require a captcha to be solved
+		doc, err := htmlquery.Parse(resp.Body)
+		if err != nil {
+			return err
+		}
+		// Check if a security code (captcha) is required
+		securityNode := htmlquery.FindOne(doc, "//*[@id='securitycode']")
+		if securityNode != nil {
+			return errors.New("authentication requires captcha verification")
+		}
 		return errors.New("authentication failed")
 	}
 	return errors.New("unexpected response status: " + resp.Status)
